@@ -18,11 +18,29 @@
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $rss = $_POST['rss'];
                 $xml = simplexml_load_file($rss);
-                $arrayData = json_decode(json_encode($xml), true);
-                $jsonData = json_encode($arrayData);
-                echo '<pre>';
-                echo json_encode($json_data, JSON_PRETTY_PRINT);
-                echo '</pre>';
+                $items = $xml->channel->item;
+                echo '<ul>';
+                foreach ($items as $item) {
+                    $title = $item->title;
+                    $description = $item->description;
+                    $link = $item->link;
+                    echo '<li>';
+                    echo '<h3><a href="' . $link . '">' . $title . '</a></h3>';
+                    echo '<p>' . $description . '</p>';
+                    echo '</li>';
+                }
+                echo '</ul>';
+
+                // Save RSS data as JSON file
+                $data = [];
+                foreach ($items as $item) {
+                    $data[] = [
+                        'title' => (string) $item->title,
+                        'description' => (string) $item->description,
+                        'link' => (string) $item->link,
+                    ];
+                }
+                $jsonData = json_encode($data, JSON_PRETTY_PRINT);
                 $file = 'rss_data.json';
                 file_put_contents($file, $jsonData);
                 echo 'RSS data saved as JSON in ' . $file;
